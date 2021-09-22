@@ -17,7 +17,8 @@ let currentActiveCard = 0;
 const cardsEl = [];
 
 // Store card data
-const cardsData = [
+const cardsData = getCardsData();
+/* const cardsData = [
   {
     question: 'What must a variable begin with?',
     answer: 'A letter, $ or _',
@@ -30,7 +31,7 @@ const cardsData = [
     question: 'Example of Case Sensitive Variable?',
     answer: 'thisIsAVariable',
   },
-];
+]; */
 
 // Create cards
 function createCards(array) {
@@ -67,12 +68,99 @@ function createCards(array) {
   });
 }
 
+// Create card
+function createCard(question, answer) {
+  const card = document.createElement('div');
+  card.classList.add('card');
+  card.innerHTML = `
+    <div class="inner-card">
+      <div class="inner-card-front">
+        <p>
+          ${question}
+        </p>
+      </div>
+      <div class="inner-card-back">
+        <p>
+          ${answer}
+        </p>
+      </div>
+    </div>
+  `;
+  cardsEl.push(card);
+}
+
 // Show number of cards
 function updateCurrentText() {
   currentEl.innerText = `${currentActiveCard + 1}/${cardsEl.length}`;
 }
 
+// Get cards from localStorage
+function getCardsData() {
+  const cards = JSON.parse(localStorage.getItem('cards'));
+  return cards === null ? [] : cards;
+}
+
+// Add cards into localStorage
+function setCardsData(dataArray) {
+  localStorage.setItem('cards', JSON.stringify(dataArray));
+  window.location.reload();
+}
+
 createCards(cardsData);
 
 // Event listeners
-nextBtn.addEventListener('click', () => {});
+nextBtn.addEventListener('click', () => {
+  cardsEl[currentActiveCard].className = 'card left';
+  currentActiveCard++;
+  if (currentActiveCard > cardsEl.length - 1) {
+    currentActiveCard = cardsEl.length - 1;
+  }
+
+  cardsEl[currentActiveCard].className = 'card active';
+  updateCurrentText();
+});
+
+prevBtn.addEventListener('click', () => {
+  cardsEl[currentActiveCard].className = 'card right';
+  currentActiveCard--;
+  if (currentActiveCard <= 0) {
+    currentActiveCard = 0;
+  }
+
+  cardsEl[currentActiveCard].className = 'card active';
+  updateCurrentText();
+});
+
+clearBtn.addEventListener('click', () => {
+  console.log('clear');
+  localStorage.clear();
+  window.location.reload();
+});
+
+// Show/hide add-container
+
+showBtn.addEventListener('click', () => {
+  addContainer.classList.add('show');
+});
+
+hideBtn.addEventListener('click', () => {
+  addContainer.classList.remove('show');
+});
+
+// Add new card to cardsEl array
+addCardBtn.addEventListener('click', () => {
+  const question = questionEl.value;
+  const answer = answerEl.value;
+
+  if (question.trim() && answer.trim()) {
+    const newCard = { question: question, answer: answer };
+    createCard(question, answer);
+
+    questionEl.value = '';
+    answerEl.value = '';
+
+    addContainer.classList.remove('show');
+    cardsData.push(newCard);
+    setCardsData(cardsData);
+  }
+});
